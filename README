@@ -1,1 +1,2 @@
-To compile: javac -cp rd881.jar *.java
+To compile: javac -cp rd881.jar *.java 
+To run: java -jar rd881.jar
