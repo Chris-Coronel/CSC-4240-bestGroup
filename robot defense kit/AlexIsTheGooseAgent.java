@@ -196,7 +196,7 @@ public class AlexIsTheGooseAgent extends BaseLearningAgent {
 				
 
 				//Added reward incentives
-/* 
+
 				//incentive to turn off when there are no insects
 				if((bugSpawn == 0) && (lastAction.get(acg).getPower() == 0)){
 					qmap.rewardAction(lastAction.get(acg), 5.0);
@@ -210,7 +210,7 @@ public class AlexIsTheGooseAgent extends BaseLearningAgent {
 				//insentive to stay on when insects are present
 				if((bugSpawn > 0) && (lastAction.get(acg).getPower() == 0)){
 					qmap.rewardAction(lastAction.get(acg), -5.0);
-				}*/
+				}
 
 				//POWER REGULATIONS!!!!
 				/*
