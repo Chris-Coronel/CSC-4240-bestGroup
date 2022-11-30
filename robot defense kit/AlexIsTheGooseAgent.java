@@ -27,7 +27,7 @@ import jig.misc.rd.RobotDefense;
  *      - actions are based only on the cells immediately adjacent to a tower
  *      - action values are not dependent (at all) on the resulting state 
  */
-public class LearnerOne extends BaseLearningAgent {
+public class AlexIsTheGooseAgent extends BaseLearningAgent {
 
 	/**
 	 * A Map of states to actions
@@ -78,7 +78,7 @@ public class LearnerOne extends BaseLearningAgent {
 
 	}
 	
-	public LearnerOne() {
+	public AlexIsTheGooseAgent() {
 		captureCount = new HashMap<AirCurrentGenerator,Integer>();
 		lastAction = new HashMap<AirCurrentGenerator,AgentAction>();		
 	}
@@ -106,7 +106,13 @@ public class LearnerOne extends BaseLearningAgent {
 		updatePerformanceLog();
 		
 		for (AirCurrentGenerator acg : sensors.generators.keySet()) {
-			if (!stateChanged(acg)) continue;
+			if (!stateChanged(acg) && timer < 16){
+
+				timer++;
+				continue;
+			}
+			timer = 0;
+
 
 			
 			// Check the current state, and make sure member variables are
@@ -166,7 +172,7 @@ public class LearnerOne extends BaseLearningAgent {
 					qmap.rewardAction(lastAction.get(acg), 10.0);
 
 					//Power scaling reward modifier for each power leverl  used for capture (we only used 2 and 4)
-					switch(lastAction.get(asg).getPower()){
+					switch(lastAction.get(acg).getPower()){
 						case 2: qmap.rewardAction(lastAction.get(acg), 15.0);
 							break;
 
@@ -190,7 +196,7 @@ public class LearnerOne extends BaseLearningAgent {
 				
 
 				//Added reward incentives
-
+/* 
 				//incentive to turn off when there are no insects
 				if((bugSpawn == 0) && (lastAction.get(acg).getPower() == 0)){
 					qmap.rewardAction(lastAction.get(acg), 5.0);
@@ -204,7 +210,7 @@ public class LearnerOne extends BaseLearningAgent {
 				//insentive to stay on when insects are present
 				if((bugSpawn > 0) && (lastAction.get(acg).getPower() == 0)){
 					qmap.rewardAction(lastAction.get(acg), -5.0);
-				}
+				}*/
 
 				//POWER REGULATIONS!!!!
 				/*
@@ -212,9 +218,8 @@ public class LearnerOne extends BaseLearningAgent {
 				 * capture instance, was a headache otherwise
 				 */
 
-				if (lastAction.get())
-
-				if (verbose) {
+				if (lastAction.get(acg) != null)
+					if (verbose) {
 					System.out.println("Last State for " + acg.toString() );
 					System.out.println(lastState.get(acg).representation());
 					System.out.println("Updated Last Action: " + qmap.getQRepresentation());
@@ -225,19 +230,13 @@ public class LearnerOne extends BaseLearningAgent {
 			// first, get the action map associated with the current state
 			qmap = actions.get(state);
 
-			AgentAction bestAction;
 			if (verbose) {
 				System.out.println("This State for Tower " + acg.toString() );
 				System.out.println(thisState.get(acg).representation());
 			}
-
-
-			
-
-			bestAction = qmap.findBestAction(verbose);
+			// find the 'right' thing to do, and do it.
+			AgentAction bestAction = qmap.findBestAction(verbose);
 			bestAction.doAction(acg);
-				//System.out.println(bestAction);
-			
 
 			// finally, store our action so we can reward it later.
 			lastAction.put(acg, bestAction);
