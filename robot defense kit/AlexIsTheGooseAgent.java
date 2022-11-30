@@ -1,6 +1,7 @@
 
 
 
+
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -53,11 +54,13 @@ public class LearnerOne extends BaseLearningAgent {
 	 * This stores the possible actions that an agent many take in any
 	 * particular state.
 	 */
+
+	int timer = 0;
 	private static final AgentAction [] potentials;
 
 	static {
 		Direction [] dirs = Direction.values();
-		potentials = new AgentAction[dirs.length];
+		potentials = new AgentAction[(dirs.length * 2) + 1];
 
 		int i = 0;
 		for(Direction d: dirs) {
@@ -65,7 +68,13 @@ public class LearnerOne extends BaseLearningAgent {
 			// power can range from 1 ... AirCurrentGenerator.POWER_SETTINGS
 			potentials[i] = new AgentAction(AirCurrentGenerator.POWER_SETTINGS, d);
 			i++;
+			
+			potentials[i] = new AgentAction(AirCurrentGenerator.POWER_SETTINGS/2, d);
+			//ALTER THIS TO DO MULTIPLE SETTINGS.
+			i++;
 		}
+		
+		potentials[i] = new AgentAction(0, dirs[0]);
 
 	}
 	
@@ -83,6 +92,7 @@ public class LearnerOne extends BaseLearningAgent {
 	 * @param deltaMS the number of milliseconds since the last call to step
 	 * 
 	 */
+	
 	public void step(long deltaMS) {
 		StateVector state;
 		QMap qmap;
@@ -90,9 +100,13 @@ public class LearnerOne extends BaseLearningAgent {
 		// This must be called each step so that the performance log is 
 		// updated.
 		updatePerformanceLog();
-		
 		for (AirCurrentGenerator acg : sensors.generators.keySet()) {
-			if (!stateChanged(acg)) continue;
+				if (!stateChanged(acg) && timer < 16){
+
+					timer++;
+					continue;
+				}
+			timer = 0;
 
 
 			// Check the current state, and make sure member variables are
@@ -183,13 +197,19 @@ public class LearnerOne extends BaseLearningAgent {
 			// first, get the action map associated with the current state
 			qmap = actions.get(state);
 
+			AgentAction bestAction;
 			if (verbose) {
 				System.out.println("This State for Tower " + acg.toString() );
 				System.out.println(thisState.get(acg).representation());
 			}
-			// find the 'right' thing to do, and do it.
-			AgentAction bestAction = qmap.findBestAction(verbose);
+
+
+			
+
+			bestAction = qmap.findBestAction(verbose);
 			bestAction.doAction(acg);
+				//System.out.println(bestAction);
+			
 
 			// finally, store our action so we can reward it later.
 			lastAction.put(acg, bestAction);
