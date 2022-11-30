@@ -119,11 +119,58 @@ public class LearnerOne extends BaseLearningAgent {
 				// get the action map associated with the previous state
 				qmap = actions.get(lastState.get(acg));
 
-				if (justCaptured) {
+				if (justCaptured){
 					// capturing insects is good
 					qmap.rewardAction(lastAction.get(acg), 10.0);
-					captureCount.put(acg,sensors.generators.get(acg));
+
+					//Power scaling reward modifier for each power leverl  used for capture (we only used 2 and 4)
+					switch(lastAction.get(asg).getPower()){
+						case 2: qmap.rewardAction(lastAction.get(acg), 15.0);
+							break;
+
+						case 4: qmap.rewardAction(lastAction.get(acg), 11.0); //did 11 just in case the reward mechanism has issues with the potential tie
+							break;
+						//added 1 and 3 functionality just in case
+
+						case 1: qmap.rewardAction(lastAction.get(acg), 20.0);
+							break;
+						case 3: qmap.rewardAction(lastAction.get(acg), 14.0);
+							break;
+					}
+
+					if(lastAction.get(acg).getPower() == 2){
+						qmap.rewardAction(lastAction.get(acg), 20);
+					}
 				}
+					captureCount.put(acg,sensors.generators.get(acg));
+
+					
+				
+
+				//Added reward incentives
+
+				//incentive to turn off when there are no insects
+				if((insectCodeSum == 0) && (lastAction.get(acg).getPower() == 0)){
+					qmap.rewardAction(lastAction.get(acg), 5.0);
+				}
+				
+				//incentive to capture insects when insects have spawned
+				if((insectCodeSum > 0 ) && (!justCaptured)){
+					qmap.rewardAction(lastAction.get(acg), -3.0);
+				}
+
+				//insentive to stay on when insects are present
+				if((insectCodeSum > 0) && (lastAction.get(acg).getPower() == 0)){
+					qmap.rewardAction(lastAction.get(acg), -5.0);
+				}
+
+				//POWER REGULATIONS!!!!
+				/*
+				 * decided to impliment in the capture reward block since that reward for each
+				 * capture instance, was a headache otherwise
+				 */
+
+				if (lastAction.get())
 
 				if (verbose) {
 					System.out.println("Last State for " + acg.toString() );
