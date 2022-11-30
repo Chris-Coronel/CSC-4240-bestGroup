@@ -203,6 +203,9 @@ public class StateVector {
 		
 		return sb.toString();
 	}
+	public int[] getCellContents(){
+		return cellContentsCode;
+	}
 	
 }
 

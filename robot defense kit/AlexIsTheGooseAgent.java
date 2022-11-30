@@ -97,7 +97,8 @@ public class AlexIsTheGooseAgent extends BaseLearningAgent {
 		StateVector state;
 		StateVector lsTemp;
 		QMap qmap;
-		int bugSpawn, currentBug = 0;
+		int bugSpawn = 0;
+		int currentBug = 0;
 		Random r = new Random(); //built in random java util
 		double rDecision = r.nextDouble(); //random double variable to be used for state change purposes 
 
@@ -106,13 +107,12 @@ public class AlexIsTheGooseAgent extends BaseLearningAgent {
 		updatePerformanceLog();
 		
 		for (AirCurrentGenerator acg : sensors.generators.keySet()) {
-			if (!stateChanged(acg) && timer < 16){
+			if (!stateChanged(acg) && timer < 5){
 
 				timer++;
 				continue;
 			}
 			timer = 0;
-
 
 			
 			// Check the current state, and make sure member variables are
@@ -130,18 +130,18 @@ public class AlexIsTheGooseAgent extends BaseLearningAgent {
 			
 			//reads if bugs were present in the state stored in qmap
 			if (lastState.get(acg) != null){
-				for (int i : lastState.get(acg).cellContentsCode){ bugSpawn += i ;}
+				int[] temp;
+				temp = lsTemp.getCellContents();
+				for (int i : temp){ bugSpawn += i ;}
 
-				for (int i : state.cellContentsCode) { currentBug += i ;} //current bug spawned is still within qmap
+				temp = state.getCellContents();
+				for (int i : temp) { currentBug += i ;} //current bug spawned is still within qmap
 			}
+			
 			//state concurrency
 			if (!stateChanged(acg)){
 				//keep functioning until bugs are nomore (the programmer creed :) )
 				if(currentBug != 0){
-					continue;
-				}
-				//runs continue half of the time just in case
-				if(rDecision > 0.5){
 					continue;
 				}
 				//else updates state as next step is taken
@@ -168,27 +168,78 @@ public class AlexIsTheGooseAgent extends BaseLearningAgent {
 				qmap = actions.get(lastState.get(acg));
 
 				if (justCaptured){
-					// capturing insects is good
-					qmap.rewardAction(lastAction.get(acg), 10.0);
+					int rewardVal = 10;
 
 					//Power scaling reward modifier for each power leverl  used for capture (we only used 2 and 4)
 					switch(lastAction.get(acg).getPower()){
-						case 2: qmap.rewardAction(lastAction.get(acg), 15.0);
+						case 2: rewardVal = 16;
 							break;
 
-						case 4: qmap.rewardAction(lastAction.get(acg), 11.0); //did 11 just in case the reward mechanism has issues with the potential tie
+						case 4: rewardVal = 12; //did 11 just in case the reward mechanism has issues with the potential tie
 							break;
 						//added 1 and 3 functionality just in case
 
-						case 1: qmap.rewardAction(lastAction.get(acg), 20.0);
+						case 1: rewardVal = 18;
 							break;
-						case 3: qmap.rewardAction(lastAction.get(acg), 14.0);
+						case 3: rewardVal = 14;
 							break;
+						default: break;
 					}
 
-					if(lastAction.get(acg).getPower() == 2){
-						qmap.rewardAction(lastAction.get(acg), 20);
+					
+					int i;
+					for (i = 0; i < potentials.length; i++) {
+						if (lastAction.get(acg) == potentials[i]) break;
 					}
+					if (i >= potentials.length) {
+						System.err.println("ERROR: Tried to reward an action that doesn't exist in the QMap. (Ignoring reward)");
+						return;
+					}
+					
+					qmap.rewardAction(lastAction.get(acg), rewardVal);
+		
+					
+					
+					if(i >= potentials.length-2)
+					{
+						if(i != potentials.length-1)
+						{
+							int temp = i;
+							i = temp - 2;
+								
+							qmap.rewardAction(potentials[i], rewardVal/2);
+							i = temp - (potentials.length - 2) ;
+							i = 0 + i;
+								
+							qmap.rewardAction(potentials[i], rewardVal/2);
+						}
+					}
+					else if(i <= 1)
+					{
+						
+						int temp = i;
+						i = temp + 2;
+							
+						qmap.rewardAction(potentials[i], rewardVal/2);
+		
+						i = potentials.length - (2 - temp);
+		
+						qmap.rewardAction(potentials[i], rewardVal/2);
+					}
+					else
+					{
+						
+						int temp = i;
+						i = temp - 2;
+						
+						qmap.rewardAction(potentials[i], rewardVal/2);
+						i = temp + 2;
+						
+						qmap.rewardAction(potentials[i], rewardVal/2);
+		
+		
+					}
+
 				}
 					captureCount.put(acg,sensors.generators.get(acg));
 
@@ -204,7 +255,8 @@ public class AlexIsTheGooseAgent extends BaseLearningAgent {
 				
 				//incentive to capture insects when insects have spawned
 				if((bugSpawn > 0 ) && (!justCaptured)){
-					qmap.rewardAction(lastAction.get(acg), -3.0);
+					for(int i = 0; i < potentials.length-1; i++)
+						qmap.rewardAction(potentials[i], 1);
 				}
 
 				//insentive to stay on when insects are present
@@ -235,7 +287,7 @@ public class AlexIsTheGooseAgent extends BaseLearningAgent {
 				System.out.println(thisState.get(acg).representation());
 			}
 			// find the 'right' thing to do, and do it.
-			AgentAction bestAction = qmap.findBestAction(verbose);
+			AgentAction bestAction = qmap.findBestAction(verbose,lastAction.get(acg));
 			bestAction.doAction(acg);
 
 			// finally, store our action so we can reward it later.
@@ -274,11 +326,10 @@ public class AlexIsTheGooseAgent extends BaseLearningAgent {
 		 * @param verbose
 		 * @return
 		 */
-		public AgentAction findBestAction(boolean verbose) {
+		public AgentAction findBestAction(boolean verbose,AgentAction a) {
 			int i,maxi,maxcount;
 			maxi=0;
 			maxcount = 1;
-			
 			if (verbose)
 				System.out.print("Picking Best Actions: " + getQRepresentation());
 
@@ -297,6 +348,13 @@ public class AlexIsTheGooseAgent extends BaseLearningAgent {
 				if (verbose)
 					System.out.println( " -- Doing Best! #" + whichMax);
 
+
+				for (i = 0; i < utility.length; i++) {
+				
+					if (utility[i] == utility[maxi]) {
+						if (actions[i] == a) return actions[i];
+					}
+				}
 				for (i = 0; i < utility.length; i++) {
 					if (utility[i] == utility[maxi]) {
 						if (whichMax == 0) return actions[i];
