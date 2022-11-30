@@ -95,11 +95,16 @@ public class AlexIsTheGooseAgent extends BaseLearningAgent {
 	
 	public void step(long deltaMS) {
 		StateVector state;
+		StateVector lsTemp;
 		QMap qmap;
+		int bugSpawn, currentBug = 0;
+		Random r = new Random(); //built in random java util
+		double rDecision = r.nextDouble(); //random double variable to be used for state change purposes 
 
 		// This must be called each step so that the performance log is 
 		// updated.
 		updatePerformanceLog();
+		
 		for (AirCurrentGenerator acg : sensors.generators.keySet()) {
 			if (!stateChanged(acg) && timer < 16){
 
@@ -109,14 +114,43 @@ public class AlexIsTheGooseAgent extends BaseLearningAgent {
 			timer = 0;
 
 
+			
 			// Check the current state, and make sure member variables are
 			// initialized for this particular state...
 			state = thisState.get(acg);
+			lsTemp = lastState.get(acg);
+
 			if (actions.get(state) == null) {
 				actions.put(state, new QMap(potentials));
 			}
 			if (captureCount.get(acg) == null) captureCount.put(acg, 0);
+			
+			//Previous state reading in 
+			qmap = actions.get(lastState.get(acg));
+			
+			//reads if bugs were present in the state stored in qmap
+			if (lastState.get(acg) != null){
+				for (int i : lastState.get(acg).cellContentsCode){ bugSpawn += i ;}
 
+				for (int i : state.cellContentsCode) { currentBug += i ;} //current bug spawned is still within qmap
+			}
+			//state concurrency
+			if (!stateChanged(acg)){
+				//keep functioning until bugs are nomore (the programmer creed :) )
+				if(currentBug != 0){
+					continue;
+				}
+				//runs continue half of the time just in case
+				if(rDecision > 0.5){
+					continue;
+				}
+				//else updates state as next step is taken
+				else{
+					lsTemp = state;
+					qmap = actions.get(state);
+				}
+
+			}
 
 			// Check to see if an insect was just captured by comparing our
 			// cached value of the insects captured by each ACG with the
@@ -164,17 +198,17 @@ public class AlexIsTheGooseAgent extends BaseLearningAgent {
 				//Added reward incentives
 /* 
 				//incentive to turn off when there are no insects
-				if((insectCodeSum == 0) && (lastAction.get(acg).getPower() == 0)){
+				if((bugSpawn == 0) && (lastAction.get(acg).getPower() == 0)){
 					qmap.rewardAction(lastAction.get(acg), 5.0);
 				}
 				
 				//incentive to capture insects when insects have spawned
-				if((insectCodeSum > 0 ) && (!justCaptured)){
+				if((bugSpawn > 0 ) && (!justCaptured)){
 					qmap.rewardAction(lastAction.get(acg), -3.0);
 				}
 
 				//insentive to stay on when insects are present
-				if((insectCodeSum > 0) && (lastAction.get(acg).getPower() == 0)){
+				if((bugSpawn > 0) && (lastAction.get(acg).getPower() == 0)){
 					qmap.rewardAction(lastAction.get(acg), -5.0);
 				}*/
 
