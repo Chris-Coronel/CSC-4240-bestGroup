@@ -1,2 +1,9 @@
 To compile: javac -cp rd881.jar *.java 
 To run: java -jar rd881.jar
+
+1d)I modified the reward function by adding a 3 parameters to incentivise suction if there is a bug, desentivize not activating suction
+when there is a bug, and different rewards on cpature of a bug for using lower settings to preserve resources. We only used settings 2 and 4 to make things simpler to impliment
+I added the 1 and 3 functionality just in case we change it in the future. Also the inscentives are all slightly different to make the tie algorithm easier to impliment in the future. 
+
+2a)To break the ties I made a function that stored the previous state and current state, checked it for utility/insentive it then proked the continue to keep the process so long as the 
+world status hasnt updated. I also had a function for randomly continuing  based on the raandom double library element in java
