@@ -1,9 +1,27 @@
 To compile: javac -cp rd881.jar *.java 
 To run: java -jar rd881.jar
 
+1a) We implemented this by allowing the vacuum to be one of the potential actions in it. Later on in the project we will add utility to having it off when bugs arent around.
+
+1b) We modified the potential actions array by doubling its size and setting every 2nd item to be the direction on half power. 
+
+
+1c) HERE ADD
+
+
 1d)I modified the reward function by adding a 3 parameters to incentivise suction if there is a bug, desentivize not activating suction
 when there is a bug, and different rewards on cpature of a bug for using lower settings to preserve resources. We only used settings 2 and 4 to make things simpler to impliment
 I added the 1 and 3 functionality just in case we change it in the future. Also the inscentives are all slightly different to make the tie algorithm easier to impliment in the future. 
 
 2a)To break the ties I made a function that stored the previous state and current state, checked it for utility/insentive it then proked the continue to keep the process so long as the 
 world status hasnt updated. I also had a function for randomly continuing  based on the raandom double library element in java
+
+
+2b) HERE ADD
+
+3a) We implemented some if-statements in step so that if the vacuum succesfully sucked in an insect at a power, then the adjacent directions would also then gain utility.
+The utility for adjacent directions is always half that of the direction the vacuum was at. 
+
+3b) This has been partially accomplished by previous sections. We early on implemented a way to value turning off the vacuum when no insects are nearby, by increasing utility when power is off and no insects are nearby.
+To avoid the utility of being off being too high, it is lowered if insects are nearby and its off. Furthermore, we use cellcontents better in our implementation of 2, 
+by having it so we grab the entire cellcontents array of a state, we can assign utility to actions based on whether bugs are there, and depending on the kind of bug.
