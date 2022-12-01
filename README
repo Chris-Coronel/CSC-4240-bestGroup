@@ -5,9 +5,10 @@ To run: java -jar rd881.jar
 
 1b) We modified the potential actions array by doubling its size and setting every 2nd item to be the direction on half power. 
 
-
-1c) HERE ADD
-
+1c) We let both agents run through all of their resouces and compared the results. Our agent captured 69 amount of bugs and 51 amount escaped. 
+Whereas the original agent captured 81 amount of bugs and 49 amount escaped. Although the original agent caught more bugs it ran through its resources much more quickly than our agent.
+This can easily get into an sensitivity vs specifity argument since our agent let more bugs escape but was more conservative with its resources. The original agent caught 
+more bugs but ran through its resources quickly.
 
 1d)I modified the reward function by adding a 3 parameters to incentivise suction if there is a bug, desentivize not activating suction
 when there is a bug, and different rewards on cpature of a bug for using lower settings to preserve resources. We only used settings 2 and 4 to make things simpler to impliment
@@ -16,8 +17,7 @@ I added the 1 and 3 functionality just in case we change it in the future. Also 
 2a)To break the ties I made a function that stored the previous state and current state, checked it for utility/insentive it then proked the continue to keep the process so long as the 
 world status hasnt updated. I also had a function for randomly continuing  based on the raandom double library element in java
 
-
-2b) HERE ADD
+2b) This section is covered by the work done in 1d. Passive reinforcement learning was used by changing the reward function which changes the way our AI learned to help it be more effective. 
 
 3a) We implemented some if-statements in step so that if the vacuum succesfully sucked in an insect at a power, then the adjacent directions would also then gain utility.
 The utility for adjacent directions is always half that of the direction the vacuum was at. 
